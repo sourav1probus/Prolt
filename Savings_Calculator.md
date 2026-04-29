@@ -5,6 +5,7 @@
 
 <h2 id="overall-dashboard">Overall dashboard</h2>
 <h3 id="cards">Cards</h3>
+<h4 id="monthly-consumption-mix---discom-vs-oa-httpdev.prolt.energy7070apibill-overviewdashboard-overview">Monthly Consumption Mix - DISCOM vs OA [<a href="http://dev.prolt.energy:7070/api/bill-overview/dashboard-overview">http://dev.prolt.energy:7070/api/bill-overview/dashboard-overview</a>]</h4>
 <pre class=" language-sql"><code class="prism  language-sql"><span class="token keyword">SELECT</span> 
     <span class="token function">SUM</span><span class="token punctuation">(</span>urbdm<span class="token punctuation">.</span>actual_discom_cost <span class="token operator">+</span> urbdm<span class="token punctuation">.</span>actual_oa_cost<span class="token punctuation">)</span> <span class="token keyword">AS</span> actual_spend<span class="token punctuation">,</span>
     <span class="token function">SUM</span><span class="token punctuation">(</span>urbdm<span class="token punctuation">.</span>prolt_discom_cost <span class="token operator">+</span> urbdm<span class="token punctuation">.</span>prolt_oa_cost<span class="token punctuation">)</span> <span class="token keyword">AS</span> prolt_op_spent<span class="token punctuation">,</span>
