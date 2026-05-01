@@ -137,7 +137,6 @@ prolt_data <span class="token keyword">AS</span> <span class="token punctuation"
 <span class="token operator">/</span>
 <span class="token keyword">NULLIF</span><span class="token punctuation">(</span><span class="token function">SUM</span><span class="token punctuation">(</span>urbdt<span class="token punctuation">.</span>consumption<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token keyword">AS</span> optimizedRate
 <span class="token keyword">FROM</span> user_run_bill_detail_monthly urbdm <span class="token keyword">JOIN</span> user_run_bill_details_tod urbdt <span class="token keyword">ON</span> urbdt<span class="token punctuation">.</span>user_run_bill_detail_monthly_id <span class="token operator">=</span> urbdm<span class="token punctuation">.</span>id
-
 <span class="token keyword">WHERE</span> urbdm<span class="token punctuation">.</span>id <span class="token operator">=</span> <span class="token string">'4413'</span> <span class="token keyword">GROUP</span> <span class="token keyword">BY</span> urbdm<span class="token punctuation">.</span>prolt_discom_cost<span class="token punctuation">,</span> urbdm<span class="token punctuation">.</span>prolt_oa_cost<span class="token punctuation">;</span>
 </code></pre>
 <h4 id="total-units">Total units</h4>
