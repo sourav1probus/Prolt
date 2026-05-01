@@ -152,4 +152,7 @@ prolt_data <span class="token keyword">AS</span> <span class="token punctuation"
     <span class="token punctuation">)</span> <span class="token keyword">AS</span> optimizedRate<span class="token punctuation">;</span>
 
 </code></pre>
+<p>####Total units</p>
+<pre class=" language-sql"><code class="prism  language-sql"><span class="token keyword">select</span> <span class="token function">sum</span><span class="token punctuation">(</span>urbdt<span class="token punctuation">.</span>consumption<span class="token punctuation">)</span> <span class="token keyword">as</span> totalUnits <span class="token keyword">from</span> user_run_bill_details_tod urbdt <span class="token keyword">where</span> urbdt<span class="token punctuation">.</span>user_run_bill_detail_monthly_id <span class="token operator">=</span><span class="token string">'4413'</span><span class="token punctuation">;</span>
+</code></pre>
 
