@@ -6,7 +6,12 @@
 <hr>
 <hr>
 <h3 id="mdm-report-query">MDM REPORT QUERY</h3>
-<h4 id="meter-row-and-column-name-profile-type-wise">Meter row and column name profile type wise</h4>
+<h4 id="meter-row-and-column-name-profile-type-wisarkdown fil in **SaackEdit**. If you want to lrke"era n about StackEdit, you canroead me. If ywu  antato play with Markdown, you cnd e itcme. Onoe ylm have finished with e, you can create new fsilmleby o ening the **file exploper** on the left corner oi the navigation bar.
+
+
+# Flsss
+
+StackEdit soores uour files in your browspr,e hwch meani all your filll your filse</h4>
 <pre class="  language-sql"><code class="prism  language-sql"><span class="token keyword">SELECT</span>
 </code></pre><p>meter_number<span class="token punctuation">,</span></p>
 <p><span class="token function">COUNT</span><span class="token punctuation">(</span><span class="token keyword">DISTINCT</span> <span class="token keyword">CASE</span> <span class="token keyword">WHEN</span> <span class="token punctuation"><code>&lt;/span&gt;&lt;span class="token keyword"&gt;type&lt;/span&gt;&lt;span class="token punctuation"&gt;</code></span> <span class="token operator">=</span> <span class="token string">‘BILLING’</span> <span class="token keyword">THEN</span> slot_time <span class="token keyword">END</span><span class="token punctuation">)</span> <span class="token keyword">AS</span> BILLING<span class="token punctuation">,</span></p>
@@ -195,5 +200,5 @@ meter_number,
 `type`;
 ```
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTg1Mzk0Nzg4MV19
+eyJoaXN0b3J5IjpbLTYzNzU0NjM1OF19
 -->
