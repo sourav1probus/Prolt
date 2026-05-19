@@ -129,4 +129,298 @@ prolt_data <span class="token keyword">AS</span> <span class="token punctuation"
 <h4 id="total-units">Total units</h4>
 <pre class=" language-sql"><code class="prism  language-sql"><span class="token keyword">select</span> <span class="token function">sum</span><span class="token punctuation">(</span>urbdt<span class="token punctuation">.</span>consumption<span class="token punctuation">)</span> <span class="token keyword">as</span> totalUnits <span class="token keyword">from</span> user_run_bill_details_tod urbdt <span class="token keyword">where</span> urbdt<span class="token punctuation">.</span>user_run_bill_detail_monthly_id <span class="token operator">=</span><span class="token string">'4413'</span><span class="token punctuation">;</span>
 </code></pre>
+<h3 id="card_tod_wise_calculation">Card_Tod_wise_calculation</h3>
+<pre class=" language-sql"><code class="prism  language-sql"><span class="token keyword">WITH</span> slabbed <span class="token keyword">AS</span> <span class="token punctuation">(</span>
+
+<span class="token keyword">SELECT</span>
+
+urbds<span class="token punctuation">.</span><span class="token operator">*</span><span class="token punctuation">,</span>
+
+<span class="token keyword">CASE</span>
+
+<span class="token keyword">WHEN</span> urbds<span class="token punctuation">.</span>slot_time::time <span class="token operator">&gt;=</span> TIME <span class="token string">'05:00:00'</span>
+
+<span class="token operator">AND</span> urbds<span class="token punctuation">.</span>slot_time::time <span class="token operator">&lt;</span> TIME <span class="token string">'11:00:00'</span> <span class="token keyword">THEN</span> <span class="token number">1</span>
+
+<span class="token keyword">WHEN</span> urbds<span class="token punctuation">.</span>slot_time::time <span class="token operator">&gt;=</span> TIME <span class="token string">'11:00:00'</span>
+
+<span class="token operator">AND</span> urbds<span class="token punctuation">.</span>slot_time::time <span class="token operator">&lt;</span> TIME <span class="token string">'17:00:00'</span> <span class="token keyword">THEN</span> <span class="token number">2</span>
+
+<span class="token keyword">WHEN</span> urbds<span class="token punctuation">.</span>slot_time::time <span class="token operator">&gt;=</span> TIME <span class="token string">'17:00:00'</span>
+
+<span class="token operator">AND</span> urbds<span class="token punctuation">.</span>slot_time::time <span class="token operator">&lt;</span> TIME <span class="token string">'23:00:00'</span> <span class="token keyword">THEN</span> <span class="token number">3</span>
+
+<span class="token keyword">WHEN</span> urbds<span class="token punctuation">.</span>slot_time::time <span class="token operator">&gt;=</span> TIME <span class="token string">'23:00:00'</span>
+
+<span class="token operator">or</span> urbds<span class="token punctuation">.</span>slot_time::time <span class="token operator">&lt;=</span> TIME <span class="token string">'23:59:59'</span>
+
+<span class="token operator">or</span> urbds<span class="token punctuation">.</span>slot_time::time <span class="token operator">&gt;=</span> TIME <span class="token string">'00:00:00'</span>
+
+<span class="token operator">OR</span> urbds<span class="token punctuation">.</span>slot_time::time <span class="token operator">&lt;</span> TIME <span class="token string">'05:00:00'</span> <span class="token keyword">THEN</span> <span class="token number">4</span>
+
+<span class="token keyword">END</span> <span class="token keyword">AS</span> slab_order<span class="token punctuation">,</span>
+
+<span class="token keyword">CASE</span>
+
+<span class="token keyword">WHEN</span> urbds<span class="token punctuation">.</span>slot_time::time <span class="token operator">&gt;=</span> TIME <span class="token string">'05:00:00'</span>
+
+<span class="token operator">AND</span> urbds<span class="token punctuation">.</span>slot_time::time <span class="token operator">&lt;</span> TIME <span class="token string">'11:00:00'</span> <span class="token keyword">THEN</span> <span class="token number">5</span>
+
+<span class="token keyword">WHEN</span> urbds<span class="token punctuation">.</span>slot_time::time <span class="token operator">&gt;=</span> TIME <span class="token string">'11:00:00'</span>
+
+<span class="token operator">AND</span> urbds<span class="token punctuation">.</span>slot_time::time <span class="token operator">&lt;</span> TIME <span class="token string">'17:00:00'</span> <span class="token keyword">THEN</span> <span class="token number">11</span>
+
+<span class="token keyword">WHEN</span> urbds<span class="token punctuation">.</span>slot_time::time <span class="token operator">&gt;=</span> TIME <span class="token string">'17:00:00'</span>
+
+<span class="token operator">AND</span> urbds<span class="token punctuation">.</span>slot_time::time <span class="token operator">&lt;</span> TIME <span class="token string">'23:00:00'</span> <span class="token keyword">THEN</span> <span class="token number">17</span>
+
+<span class="token keyword">WHEN</span> urbds<span class="token punctuation">.</span>slot_time::time <span class="token operator">&gt;=</span> TIME <span class="token string">'23:00:00'</span>
+
+<span class="token operator">or</span> urbds<span class="token punctuation">.</span>slot_time::time <span class="token operator">&lt;=</span> TIME <span class="token string">'23:59:59'</span>
+
+<span class="token operator">or</span> urbds<span class="token punctuation">.</span>slot_time::time <span class="token operator">&gt;=</span> TIME <span class="token string">'00:00:00'</span>
+
+<span class="token operator">OR</span> urbds<span class="token punctuation">.</span>slot_time::time <span class="token operator">&lt;</span> TIME <span class="token string">'05:00:00'</span> <span class="token keyword">THEN</span> <span class="token number">23</span>
+
+<span class="token keyword">END</span> <span class="token keyword">AS</span> tod_slab_start<span class="token punctuation">,</span>
+
+<span class="token keyword">CASE</span>
+
+<span class="token keyword">WHEN</span> urbds<span class="token punctuation">.</span>slot_time::time <span class="token operator">&gt;=</span> TIME <span class="token string">'05:00:00'</span>
+
+<span class="token operator">AND</span> urbds<span class="token punctuation">.</span>slot_time::time <span class="token operator">&lt;</span> TIME <span class="token string">'11:00:00'</span> <span class="token keyword">THEN</span> <span class="token number">11</span>
+
+<span class="token keyword">WHEN</span> urbds<span class="token punctuation">.</span>slot_time::time <span class="token operator">&gt;=</span> TIME <span class="token string">'11:00:00'</span>
+
+<span class="token operator">AND</span> urbds<span class="token punctuation">.</span>slot_time::time <span class="token operator">&lt;</span> TIME <span class="token string">'17:00:00'</span> <span class="token keyword">THEN</span> <span class="token number">17</span>
+
+<span class="token keyword">WHEN</span> urbds<span class="token punctuation">.</span>slot_time::time <span class="token operator">&gt;=</span> TIME <span class="token string">'17:00:00'</span>
+
+<span class="token operator">AND</span> urbds<span class="token punctuation">.</span>slot_time::time <span class="token operator">&lt;</span> TIME <span class="token string">'23:00:00'</span> <span class="token keyword">THEN</span> <span class="token number">23</span>
+
+<span class="token keyword">WHEN</span> urbds<span class="token punctuation">.</span>slot_time::time <span class="token operator">&gt;=</span> TIME <span class="token string">'23:00:00'</span>
+
+<span class="token operator">or</span> urbds<span class="token punctuation">.</span>slot_time::time <span class="token operator">&lt;=</span> TIME <span class="token string">'23:59:59'</span>
+
+<span class="token operator">or</span> urbds<span class="token punctuation">.</span>slot_time::time <span class="token operator">&gt;=</span> TIME <span class="token string">'00:00:00'</span>
+
+<span class="token operator">OR</span> urbds<span class="token punctuation">.</span>slot_time::time <span class="token operator">&lt;</span> TIME <span class="token string">'05:00:00'</span> <span class="token keyword">THEN</span> <span class="token number">5</span>
+
+<span class="token keyword">END</span> <span class="token keyword">AS</span> tod_slab_end
+
+<span class="token keyword">FROM</span> user_run_bill_details_slot urbds
+
+<span class="token keyword">WHERE</span> urbds<span class="token punctuation">.</span>user_id <span class="token operator">=</span> <span class="token string">'665fbb1c-7c40-4318-b413-58c40a78535a'</span>
+
+<span class="token operator">AND</span> urbds<span class="token punctuation">.</span>slot_time <span class="token operator">&gt;=</span> <span class="token string">'2025-11-01 00:00:00.000'</span>
+
+<span class="token operator">AND</span> urbds<span class="token punctuation">.</span>slot_time <span class="token operator">&lt;=</span> <span class="token string">'2025-11-30 23:59:00.000'</span>
+
+<span class="token punctuation">)</span>
+
+<span class="token keyword">SELECT</span>
+
+tod_slab_start <span class="token keyword">AS</span> <span class="token string">"TOD Slab Start"</span><span class="token punctuation">,</span>
+
+tod_slab_end <span class="token keyword">AS</span> <span class="token string">"TOD Slab End"</span><span class="token punctuation">,</span>
+
+<span class="token function">SUM</span><span class="token punctuation">(</span><span class="token keyword">COALESCE</span><span class="token punctuation">(</span>actual_total_consumption<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token keyword">AS</span> actual_total_consumption<span class="token punctuation">,</span>
+
+<span class="token function">SUM</span><span class="token punctuation">(</span><span class="token keyword">COALESCE</span><span class="token punctuation">(</span>prolt_discom_consumption<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+<span class="token operator">+</span> <span class="token function">SUM</span><span class="token punctuation">(</span><span class="token keyword">COALESCE</span><span class="token punctuation">(</span>prolt_oa_consumption<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token keyword">AS</span> prolt_discom_oa_consumption<span class="token punctuation">,</span>
+
+<span class="token function">SUM</span><span class="token punctuation">(</span><span class="token keyword">COALESCE</span><span class="token punctuation">(</span>calculated_discom_cost<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+<span class="token operator">+</span> <span class="token function">SUM</span><span class="token punctuation">(</span><span class="token keyword">COALESCE</span><span class="token punctuation">(</span>actual_oa_cost<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token keyword">AS</span> actual_spend<span class="token punctuation">,</span>
+
+<span class="token function">SUM</span><span class="token punctuation">(</span><span class="token keyword">COALESCE</span><span class="token punctuation">(</span>prolt_discom_consumption<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token keyword">AS</span> prolt_discom_consumption<span class="token punctuation">,</span>
+
+<span class="token function">SUM</span><span class="token punctuation">(</span><span class="token keyword">COALESCE</span><span class="token punctuation">(</span>prolt_discom_cost<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token keyword">AS</span> prolt_discom_cost<span class="token punctuation">,</span>
+
+<span class="token function">SUM</span><span class="token punctuation">(</span><span class="token keyword">COALESCE</span><span class="token punctuation">(</span>prolt_oa_consumption<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token keyword">AS</span> prolt_oa_consumption<span class="token punctuation">,</span>
+
+<span class="token function">SUM</span><span class="token punctuation">(</span><span class="token keyword">COALESCE</span><span class="token punctuation">(</span>prolt_oa_cost<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token keyword">AS</span> prolt_oa_cost<span class="token punctuation">,</span>
+
+<span class="token function">SUM</span><span class="token punctuation">(</span><span class="token keyword">COALESCE</span><span class="token punctuation">(</span>prolt_discom_cost<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+<span class="token operator">+</span> <span class="token function">SUM</span><span class="token punctuation">(</span><span class="token keyword">COALESCE</span><span class="token punctuation">(</span>prolt_oa_cost<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token keyword">AS</span> prolt_suggested<span class="token punctuation">,</span>
+
+<span class="token punctuation">(</span>
+
+<span class="token function">SUM</span><span class="token punctuation">(</span><span class="token keyword">COALESCE</span><span class="token punctuation">(</span>calculated_discom_cost<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+<span class="token operator">+</span> <span class="token function">SUM</span><span class="token punctuation">(</span><span class="token keyword">COALESCE</span><span class="token punctuation">(</span>actual_oa_cost<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+<span class="token punctuation">)</span>
+
+<span class="token operator">-</span>
+
+<span class="token punctuation">(</span>
+
+<span class="token function">SUM</span><span class="token punctuation">(</span><span class="token keyword">COALESCE</span><span class="token punctuation">(</span>prolt_discom_cost<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+<span class="token operator">+</span> <span class="token function">SUM</span><span class="token punctuation">(</span><span class="token keyword">COALESCE</span><span class="token punctuation">(</span>prolt_oa_cost<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+<span class="token punctuation">)</span> <span class="token keyword">AS</span> savings
+
+<span class="token keyword">FROM</span> slabbed
+
+<span class="token keyword">GROUP</span> <span class="token keyword">BY</span>
+
+slab_order<span class="token punctuation">,</span>
+
+tod_slab_start<span class="token punctuation">,</span>
+
+tod_slab_end
+
+<span class="token keyword">ORDER</span> <span class="token keyword">BY</span> slab_order<span class="token punctuation">;</span>
+</code></pre>
+<p>###or</p>
+<pre class=" language-sql"><code class="prism  language-sql"><span class="token keyword">WITH</span> slabbed <span class="token keyword">AS</span> <span class="token punctuation">(</span>
+
+<span class="token keyword">SELECT</span>
+
+urbds<span class="token punctuation">.</span><span class="token operator">*</span><span class="token punctuation">,</span>
+
+<span class="token keyword">CASE</span>
+
+<span class="token keyword">WHEN</span> urbds<span class="token punctuation">.</span>slot_time::time <span class="token operator">&gt;=</span> TIME <span class="token string">'05:00:00'</span>
+
+<span class="token operator">AND</span> urbds<span class="token punctuation">.</span>slot_time::time <span class="token operator">&lt;</span> TIME <span class="token string">'11:00:00'</span> <span class="token keyword">THEN</span> <span class="token number">1</span>
+
+<span class="token keyword">WHEN</span> urbds<span class="token punctuation">.</span>slot_time::time <span class="token operator">&gt;=</span> TIME <span class="token string">'11:00:00'</span>
+
+<span class="token operator">AND</span> urbds<span class="token punctuation">.</span>slot_time::time <span class="token operator">&lt;</span> TIME <span class="token string">'17:00:00'</span> <span class="token keyword">THEN</span> <span class="token number">2</span>
+
+<span class="token keyword">WHEN</span> urbds<span class="token punctuation">.</span>slot_time::time <span class="token operator">&gt;=</span> TIME <span class="token string">'17:00:00'</span>
+
+<span class="token operator">AND</span> urbds<span class="token punctuation">.</span>slot_time::time <span class="token operator">&lt;</span> TIME <span class="token string">'23:00:00'</span> <span class="token keyword">THEN</span> <span class="token number">3</span>
+
+<span class="token keyword">WHEN</span> urbds<span class="token punctuation">.</span>slot_time::time <span class="token operator">&gt;=</span> TIME <span class="token string">'23:00:00'</span>
+
+<span class="token operator">or</span> urbds<span class="token punctuation">.</span>slot_time::time <span class="token operator">&lt;=</span> TIME <span class="token string">'23:59:59'</span>
+
+<span class="token operator">or</span> urbds<span class="token punctuation">.</span>slot_time::time <span class="token operator">&gt;=</span> TIME <span class="token string">'00:00:00'</span>
+
+<span class="token operator">OR</span> urbds<span class="token punctuation">.</span>slot_time::time <span class="token operator">&lt;</span> TIME <span class="token string">'05:00:00'</span> <span class="token keyword">THEN</span> <span class="token number">4</span>
+
+<span class="token keyword">END</span> <span class="token keyword">AS</span> slab_order<span class="token punctuation">,</span>
+
+<span class="token keyword">CASE</span>
+
+<span class="token keyword">WHEN</span> urbds<span class="token punctuation">.</span>slot_time::time <span class="token operator">&gt;=</span> TIME <span class="token string">'05:00:00'</span>
+
+<span class="token operator">AND</span> urbds<span class="token punctuation">.</span>slot_time::time <span class="token operator">&lt;</span> TIME <span class="token string">'11:00:00'</span> <span class="token keyword">THEN</span> <span class="token number">5</span>
+
+<span class="token keyword">WHEN</span> urbds<span class="token punctuation">.</span>slot_time::time <span class="token operator">&gt;=</span> TIME <span class="token string">'11:00:00'</span>
+
+<span class="token operator">AND</span> urbds<span class="token punctuation">.</span>slot_time::time <span class="token operator">&lt;</span> TIME <span class="token string">'17:00:00'</span> <span class="token keyword">THEN</span> <span class="token number">11</span>
+
+<span class="token keyword">WHEN</span> urbds<span class="token punctuation">.</span>slot_time::time <span class="token operator">&gt;=</span> TIME <span class="token string">'17:00:00'</span>
+
+<span class="token operator">AND</span> urbds<span class="token punctuation">.</span>slot_time::time <span class="token operator">&lt;</span> TIME <span class="token string">'23:00:00'</span> <span class="token keyword">THEN</span> <span class="token number">17</span>
+
+<span class="token keyword">WHEN</span> urbds<span class="token punctuation">.</span>slot_time::time <span class="token operator">&gt;=</span> TIME <span class="token string">'23:00:00'</span>
+
+<span class="token operator">or</span> urbds<span class="token punctuation">.</span>slot_time::time <span class="token operator">&lt;=</span> TIME <span class="token string">'23:59:59'</span>
+
+<span class="token operator">or</span> urbds<span class="token punctuation">.</span>slot_time::time <span class="token operator">&gt;=</span> TIME <span class="token string">'00:00:00'</span>
+
+<span class="token operator">OR</span> urbds<span class="token punctuation">.</span>slot_time::time <span class="token operator">&lt;</span> TIME <span class="token string">'05:00:00'</span> <span class="token keyword">THEN</span> <span class="token number">23</span>
+
+<span class="token keyword">END</span> <span class="token keyword">AS</span> tod_slab_start<span class="token punctuation">,</span>
+
+<span class="token keyword">CASE</span>
+
+<span class="token keyword">WHEN</span> urbds<span class="token punctuation">.</span>slot_time::time <span class="token operator">&gt;=</span> TIME <span class="token string">'05:00:00'</span>
+
+<span class="token operator">AND</span> urbds<span class="token punctuation">.</span>slot_time::time <span class="token operator">&lt;</span> TIME <span class="token string">'11:00:00'</span> <span class="token keyword">THEN</span> <span class="token number">11</span>
+
+<span class="token keyword">WHEN</span> urbds<span class="token punctuation">.</span>slot_time::time <span class="token operator">&gt;=</span> TIME <span class="token string">'11:00:00'</span>
+
+<span class="token operator">AND</span> urbds<span class="token punctuation">.</span>slot_time::time <span class="token operator">&lt;</span> TIME <span class="token string">'17:00:00'</span> <span class="token keyword">THEN</span> <span class="token number">17</span>
+
+<span class="token keyword">WHEN</span> urbds<span class="token punctuation">.</span>slot_time::time <span class="token operator">&gt;=</span> TIME <span class="token string">'17:00:00'</span>
+
+<span class="token operator">AND</span> urbds<span class="token punctuation">.</span>slot_time::time <span class="token operator">&lt;</span> TIME <span class="token string">'23:00:00'</span> <span class="token keyword">THEN</span> <span class="token number">23</span>
+
+<span class="token keyword">WHEN</span> urbds<span class="token punctuation">.</span>slot_time::time <span class="token operator">&gt;=</span> TIME <span class="token string">'23:00:00'</span>
+
+<span class="token operator">or</span> urbds<span class="token punctuation">.</span>slot_time::time <span class="token operator">&lt;=</span> TIME <span class="token string">'23:59:59'</span>
+
+<span class="token operator">or</span> urbds<span class="token punctuation">.</span>slot_time::time <span class="token operator">&gt;=</span> TIME <span class="token string">'00:00:00'</span>
+
+<span class="token operator">OR</span> urbds<span class="token punctuation">.</span>slot_time::time <span class="token operator">&lt;</span> TIME <span class="token string">'05:00:00'</span> <span class="token keyword">THEN</span> <span class="token number">5</span>
+
+<span class="token keyword">END</span> <span class="token keyword">AS</span> tod_slab_end
+
+<span class="token keyword">FROM</span> user_run_bill_details_slot urbds
+
+<span class="token keyword">WHERE</span> urbds<span class="token punctuation">.</span>user_id <span class="token operator">=</span> <span class="token string">'665fbb1c-7c40-4318-b413-58c40a78535a'</span>
+
+<span class="token operator">AND</span> urbds<span class="token punctuation">.</span>slot_time <span class="token operator">&gt;=</span> <span class="token string">'2025-11-01 00:00:00.000'</span>
+
+<span class="token operator">AND</span> urbds<span class="token punctuation">.</span>slot_time <span class="token operator">&lt;=</span> <span class="token string">'2025-11-30 23:59:00.000'</span>
+
+<span class="token punctuation">)</span>
+
+<span class="token keyword">SELECT</span>
+
+tod_slab_start <span class="token keyword">AS</span> <span class="token string">"TOD Slab Start"</span><span class="token punctuation">,</span>
+
+tod_slab_end <span class="token keyword">AS</span> <span class="token string">"TOD Slab End"</span><span class="token punctuation">,</span>
+
+<span class="token function">SUM</span><span class="token punctuation">(</span><span class="token keyword">COALESCE</span><span class="token punctuation">(</span>actual_total_consumption<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token keyword">AS</span> actual_total_consumption<span class="token punctuation">,</span>
+
+<span class="token function">SUM</span><span class="token punctuation">(</span><span class="token keyword">COALESCE</span><span class="token punctuation">(</span>prolt_discom_consumption<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+<span class="token operator">+</span> <span class="token function">SUM</span><span class="token punctuation">(</span><span class="token keyword">COALESCE</span><span class="token punctuation">(</span>prolt_oa_consumption<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token keyword">AS</span> prolt_discom_oa_consumption<span class="token punctuation">,</span>
+
+<span class="token function">SUM</span><span class="token punctuation">(</span><span class="token keyword">COALESCE</span><span class="token punctuation">(</span>calculated_discom_cost<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+<span class="token operator">+</span> <span class="token function">SUM</span><span class="token punctuation">(</span><span class="token keyword">COALESCE</span><span class="token punctuation">(</span>actual_oa_cost<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token keyword">AS</span> actual_spend<span class="token punctuation">,</span>
+
+<span class="token function">SUM</span><span class="token punctuation">(</span><span class="token keyword">COALESCE</span><span class="token punctuation">(</span>prolt_discom_consumption<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token keyword">AS</span> prolt_discom_consumption<span class="token punctuation">,</span>
+
+<span class="token function">SUM</span><span class="token punctuation">(</span><span class="token keyword">COALESCE</span><span class="token punctuation">(</span>prolt_discom_cost<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token keyword">AS</span> prolt_discom_cost<span class="token punctuation">,</span>
+
+<span class="token function">SUM</span><span class="token punctuation">(</span><span class="token keyword">COALESCE</span><span class="token punctuation">(</span>prolt_oa_consumption<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token keyword">AS</span> prolt_oa_consumption<span class="token punctuation">,</span>
+
+<span class="token function">SUM</span><span class="token punctuation">(</span><span class="token keyword">COALESCE</span><span class="token punctuation">(</span>prolt_oa_cost<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token keyword">AS</span> prolt_oa_cost<span class="token punctuation">,</span>
+
+<span class="token function">SUM</span><span class="token punctuation">(</span><span class="token keyword">COALESCE</span><span class="token punctuation">(</span>prolt_discom_cost<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+<span class="token operator">+</span> <span class="token function">SUM</span><span class="token punctuation">(</span><span class="token keyword">COALESCE</span><span class="token punctuation">(</span>prolt_oa_cost<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token keyword">AS</span> prolt_suggested<span class="token punctuation">,</span>
+
+<span class="token punctuation">(</span>
+
+<span class="token function">SUM</span><span class="token punctuation">(</span><span class="token keyword">COALESCE</span><span class="token punctuation">(</span>calculated_discom_cost<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+<span class="token operator">+</span> <span class="token function">SUM</span><span class="token punctuation">(</span><span class="token keyword">COALESCE</span><span class="token punctuation">(</span>actual_oa_cost<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+<span class="token punctuation">)</span>
+
+<span class="token operator">-</span>
+
+<span class="token punctuation">(</span>
+
+<span class="token function">SUM</span><span class="token punctuation">(</span><span class="token keyword">COALESCE</span><span class="token punctuation">(</span>prolt_discom_cost<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+<span class="token operator">+</span> <span class="token function">SUM</span><span class="token punctuation">(</span><span class="token keyword">COALESCE</span><span class="token punctuation">(</span>prolt_oa_cost<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+<span class="token punctuation">)</span> <span class="token keyword">AS</span> savings
+
+<span class="token keyword">FROM</span> slabbed
+
+<span class="token keyword">GROUP</span> <span class="token keyword">BY</span>
+
+slab_order<span class="token punctuation">,</span>
+
+tod_slab_start<span class="token punctuation">,</span>
+
+tod_slab_end
+
+<span class="token keyword">ORDER</span> <span class="token keyword">BY</span> slab_order<span class="token punctuation">;</span>
+</code></pre>
 
